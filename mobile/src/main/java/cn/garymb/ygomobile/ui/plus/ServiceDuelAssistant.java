@@ -53,12 +53,12 @@ public class ServiceDuelAssistant extends Service {
 
 
     public static String cardSearchMessage;
-    //卡查关键字
-    private String[] cardSearchKey = new String[]{"?", "？"};
 
     private LinearLayout mFloatLayout;
     private TextView ds_text;
     private Button ds_join, ds_qx;
+    //卡查关键字
+    private String[] cardSearchKey = new String[]{"?", "？"};
 
     //是否可以移除悬浮窗上面的视图
     private boolean isdis = false;
@@ -120,13 +120,13 @@ public class ServiceDuelAssistant extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
-        Log.d(TAG,"rev action:" + action);
+        Log.d(TAG, "rev action:" + action);
         if (DUEL_ASSISTANT_SERVICE_ACTION.equals(action)) {
             String cmd = intent.getStringExtra(CMD_NAME);
-            Log.d(TAG,"rev cmd:" + cmd);
+            Log.d(TAG, "rev cmd:" + cmd);
 
             if (null == cmd) {
-                Log.e(TAG,"cmd null");
+                Log.e(TAG, "cmd null");
             } else {
                 switch (cmd) {
                     case CMD_STOP_SERVICE:
@@ -134,7 +134,9 @@ public class ServiceDuelAssistant extends Service {
                         break;
 
                     case CMD_START_GAME:
-                        startActivity(new Intent(this,MainActivity.class));
+                        Intent intent2 = new Intent(ServiceDuelAssistant.this, MainActivity.class);
+                        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent2);
                         break;
 
                     default:
@@ -154,18 +156,18 @@ public class ServiceDuelAssistant extends Service {
         // TODO: Implement this method
         super.onCreate();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            RemoteViews remoteViews = new RemoteViews(getPackageName(),R.layout.notification_view_duel_assistant);
-            Intent intent = new Intent(this,this.getClass());
+            RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.notification_view_duel_assistant);
+            Intent intent = new Intent(this, this.getClass());
             intent.setAction(DUEL_ASSISTANT_SERVICE_ACTION);
             PendingIntent pendingIntent;
 
-            intent.putExtra(CMD_NAME,CMD_START_GAME);
-            pendingIntent = PendingIntent.getService(this,1,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-            remoteViews.setOnClickPendingIntent(R.id.notification_view_duel_assistant,pendingIntent);
+            intent.putExtra(CMD_NAME, CMD_START_GAME);
+            pendingIntent = PendingIntent.getService(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            remoteViews.setOnClickPendingIntent(R.id.notification_view_duel_assistant, pendingIntent);
 
-            intent.putExtra(CMD_NAME,CMD_STOP_SERVICE);
-            pendingIntent = PendingIntent.getService(this,2,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-            remoteViews.setOnClickPendingIntent(R.id.buttonStopService,pendingIntent);
+            intent.putExtra(CMD_NAME, CMD_STOP_SERVICE);
+            pendingIntent = PendingIntent.getService(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            remoteViews.setOnClickPendingIntent(R.id.buttonStopService, pendingIntent);
 
 
             Notification.Builder builder = new Notification.Builder(this);
@@ -214,6 +216,10 @@ public class ServiceDuelAssistant extends Service {
                         if (cardSearchStart != -1) {
                             //卡查内容
                             cardSearchMessage = clipMessage.substring(cardSearchStart + s.length(), clipMessage.length());
+                            //如果复制的文本里带？号后面没有内容则不跳转
+                            if (TextUtils.isEmpty(cardSearchMessage)) {
+                                return;
+                            }
                             Intent intent = new Intent(ServiceDuelAssistant.this, CardSearchAcitivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.putExtra(CardSearchAcitivity.SEARCH_MESSAGE, cardSearchMessage);
